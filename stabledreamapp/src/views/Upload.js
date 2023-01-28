@@ -15,7 +15,7 @@ const Upload = () => {
     const userId = "user-dir-" + Date.now(); //generate unique user id
     const bucketName = `testing-image-upload-stabledream`;
 
-    sendMessageToQueue(userId, input);
+    // sendMessageToQueue(userId, input);
 
     try {
       for (let i = 0; i < files.length; i++) {
