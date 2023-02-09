@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
+import {Link, useNavigate} from 'react-router-dom';
+
 const AWS = require('aws-sdk');
 const uuid = require('uuid');
+
+
 
 AWS.config.update({
   accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY,
@@ -13,11 +17,20 @@ const sqs = new AWS.SQS();
 
 
 const App = () => {
+  const navigate = useNavigate();
+
   const [files, setFiles] = useState([]);
   const [input, setInput] = useState("");
+  const [numFiles, setnumFiles] = useState(0);
+  const [bucket, setBucket] = useState("");
+
+  const toGenerate=()=>{
+    navigate('/generate',{state:{bucket: bucket, input: input, numFiles: numFiles}});
+      }
 
   const onChange = (e) => {
     setFiles(e.target.files);
+    setnumFiles(e.target.files.length)
   }
   const onChange2 = (e) => {
     setInput(e.target.value);
@@ -28,7 +41,7 @@ const App = () => {
     const bucketName = 'testing-image-upload-stabledream';
     const userId = Date.now(); //generate unique user id
     const dirName = `user-dir-${userId}`;
-
+    setBucket(dirName)
     sendMessageToQueue(dirName, input);
 
     try {
@@ -42,7 +55,7 @@ const App = () => {
           Key: dirName + "/images/" + file.name, // adds the "images" directory to the file's key
           ContentType: file.type,
         };
-        // await s3.putObject(params).promise();
+        await s3.putObject(params).promise();
         console.log("File uploaded successfully: ", file.name);
       }
     } catch (err) {
@@ -52,24 +65,22 @@ const App = () => {
 
   const sendMessageToQueue = async (bucketPath, userInformation) => {
     // prepare the message to be sent to the queue
-    console.log(JSON.stringify({
-      bucketPath: bucketPath,
-      userInformation: userInformation
-    }));
+    console.log(numFiles);
     const messageDeduplicationId = uuid.v4();
     const params = {
       MessageBody: JSON.stringify({
         bucketPath: bucketPath,
-        userInformation: userInformation
+        userInformation: userInformation,
+        numImages:numFiles
       }),
       QueueUrl: 'https://sqs.us-east-1.amazonaws.com/312398414861/StableDreamQueue.fifo',
       MessageGroupId: 'messageGroup1',
-      MessageDeduplicationId: messageDeduplicationId,
+      MessageDeduplicationId: messageDeduplicationId
     };
-  
+    
     // send the message to the queue
     try {
-      // await sqs.sendMessage(params).promise();
+      await sqs.sendMessage(params).promise();
       console.log('Message sent to the queue successfully.');
     } catch (err) {
       console.log('Error sending message to the queue:', err);
@@ -84,6 +95,9 @@ const App = () => {
         <input type="text" multiple onChange={onChange2} />
         <br />
         <button type="submit">Upload</button>
+
+        <a onClick={()=>{toGenerate()}}>Generate Images!</a>
+
       </form>
     </div>
   );
