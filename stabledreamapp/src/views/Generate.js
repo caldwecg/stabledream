@@ -30,17 +30,25 @@ const Generate = () => {
 
   const location = useLocation();
   const [input, setInput] = useState("");
-  const [images, setImages] = useState([]);
+  const [bucket, setBucket] = useState("");
+  const [numImages, setNumImages] = useState(0);
+
 
   const onChange2 = (e) => {
     setInput(e.target.value);
+  }
+  const onChange3 = (e) => {
+    setBucket(e.target.value);
+  }
+  const onChange4 = (e) => {
+    setNumImages(e.target.value);
   }
 
   const onSubmit = async (e) => {
     e.preventDefault();;
     console.log(location.state.bucket)
     console.log(location.state.input)
-    sendMessageToQueue(location.state.bucket, location.state.input, input, location.state.numFiles);
+    sendMessageToQueue(bucket, "unnecessary", input, numImages);
   }
 
   const sendMessageToQueue = async (bucketPath, userInformation, prompt, numFiles) => {
@@ -94,7 +102,12 @@ const Generate = () => {
     <div>
       <form onSubmit={onSubmit}>
         <h2>Enter your prompt: </h2>
-        <input type="text" multiple onChange={onChange2} />
+        <input style={{width: 1200}} type="text" multiple onChange={onChange2} />
+        <h2>Enter your bucket: </h2>
+        <input type="text" multiple onChange={onChange3} />
+        <h2>Enter your num images: </h2>
+        <input type="text" multiple onChange={onChange4} />
+
         <br />
         <br />
         <button type="submit">generate</button>
