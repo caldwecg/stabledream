@@ -32,7 +32,12 @@ const Generate = () => {
   const [input, setInput] = useState("");
   const [bucket, setBucket] = useState("");
   const [numImages, setNumImages] = useState(0);
+  const [nPrompt, setnPrompt] = useState("");
+  const [batchSize, setBatchSize] = useState(4);
+  const [inferenceSteps, setInferenceSteps] = useState(50);
+  const [guidanceScale, setGuidanceScale] = useState(7.5);
 
+  
 
   const onChange2 = (e) => {
     setInput(e.target.value);
@@ -44,14 +49,25 @@ const Generate = () => {
     setNumImages(e.target.value);
   }
 
-  const onSubmit = async (e) => {
-    e.preventDefault();;
-    console.log(location.state.bucket)
-    console.log(location.state.input)
-    sendMessageToQueue(bucket, "unnecessary", input, numImages);
+  const onChange5 = (e) => {
+    setnPrompt(e.target.value);
+  }
+  const onChange6 = (e) => {
+    setBatchSize(e.target.value);
+  }
+  const onChange7 = (e) => {
+    setInferenceSteps(e.target.value);
   }
 
-  const sendMessageToQueue = async (bucketPath, userInformation, prompt, numFiles) => {
+  const onChange8 = (e) => {
+    setGuidanceScale(e.target.value);
+  }
+  const onSubmit = async (e) => {
+    e.preventDefault();;
+    sendMessageToQueue(bucket, "unnecessary", input, numImages, nPrompt, batchSize, inferenceSteps, guidanceScale);
+  }
+
+  const sendMessageToQueue = async (bucketPath, userInformation, prompt, numFiles, nPrompt, batchSize, inferenceSteps, guidanceScale) => {
     // prepare the message to be sent to the queue
 
     const messageDeduplicationId = uuid.v4();
@@ -60,7 +76,11 @@ const Generate = () => {
         bucketPath: bucketPath,
         userInformation: userInformation,
         prompt: prompt,
-        numFiles: numFiles
+        numFiles: numFiles,
+        nPrompt: nPrompt,
+        batchSize: batchSize,
+        inferenceSteps: inferenceSteps,
+        guidanceScale: guidanceScale
       }),
       QueueUrl: 'https://sqs.us-east-1.amazonaws.com/312398414861/imagerequest.fifo',
       MessageGroupId: 'messageGroup1',
@@ -105,8 +125,16 @@ const Generate = () => {
         <input style={{width: 1200}} type="text" multiple onChange={onChange2} />
         <h2>Enter your bucket: </h2>
         <input type="text" multiple onChange={onChange3} />
-        <h2>Enter your num images: </h2>
+        <h2>Enter your model num images /80: </h2>
         <input type="text" multiple onChange={onChange4} />
+        <h2>Enter your negative prompt: </h2>
+        <input type="text" multiple onChange={onChange5} />
+        <h2>Enter your batch size (default: 4): </h2>
+        <input type="text" multiple onChange={onChange6} />
+        <h2>Enter your inference steps (default: 50): </h2>
+        <input type="text" multiple onChange={onChange7} />
+        <h2>Enter your guidance scale (defalut: 7.5)): </h2>
+        <input type="text" multiple onChange={onChange8} />
 
         <br />
         <br />
